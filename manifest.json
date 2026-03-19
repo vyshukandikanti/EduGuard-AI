@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "AdQuiz — Learn During YouTube Ads",
+  "version": "2.0",
+  "description": "Shows quiz during YouTube ads. Detects drowsiness via webcam. Built by Vyshu.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "http://localhost:5000/*",
+    "http://127.0.0.1:5000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AdQuiz"
+  }
+}

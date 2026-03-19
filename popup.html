@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 320px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-weight: 600;
+      background: #000000;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Neon scanline effect ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(191, 0, 255, 0.015) 2px,
+        rgba(191, 0, 255, 0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Neon corner glow ── */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background:
+        radial-gradient(ellipse at 0% 0%, rgba(191,0,255,0.10) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(120,0,255,0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: relative;
+      z-index: 1;
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid #bf00ff22;
+      background: linear-gradient(180deg, #000000 0%, #05000f 100%);
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .logo-wrap {
+      width: 46px; height: 46px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .logo-wrap svg {
+      width: 46px; height: 46px;
+      filter: drop-shadow(0 0 8px #bf00ff) drop-shadow(0 0 16px #bf00ff88);
+      animation: logoGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes logoGlow {
+      0%,100% { filter: drop-shadow(0 0 6px #bf00ff) drop-shadow(0 0 14px #bf00ff66); }
+      50%      { filter: drop-shadow(0 0 12px #bf00ff) drop-shadow(0 0 24px #bf00ffaa); }
+    }
+
+    .title-block { flex: 1; }
+
+    .app-name {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #bf00ff, #7000ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    .app-tagline {
+      font-size: 9px;
+      font-weight: 700;
+      color: #bf00ff88;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* ── Server badge ── */
+    .server-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #bf00ff44;
+      background: #bf00ff11;
+      font-size: 10px;
+      font-weight: 700;
+      color: #bf00ff;
+    }
+    .server-badge.offline {
+      border-color: #ff444444;
+      background: #ff444411;
+      color: #ff4444;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #bf00ff;
+      box-shadow: 0 0 6px #bf00ff;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    .dot.off { background: #ff4444; box-shadow: 0 0 6px #ff4444; animation: none; }
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: 0.2; }
+    }
+
+    /* ── Built by tag ── */
+    .built-by {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .built-by-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #bf00ff44, transparent);
+    }
+    .built-by-text {
+      font-size: 9px;
+      font-weight: 700;
+      color: #bf00ff66;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .built-by-name {
+      font-size: 10px;
+      font-weight: 900;
+      color: #bf00ff;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px #bf00ff88;
+    }
+
+    /* ── STATUS CARDS ── */
+    .status-section {
+      position: relative; z-index: 1;
+      padding: 12px 14px 8px;
+    }
+
+    .section-title {
+      font-size: 8px;
+      font-weight: 800;
+      color: #bf00ff55;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .stat-card {
+      background: #05000f;
+      border: 1px solid #bf00ff1a;
+      border-radius: 8px;
+      padding: 9px 11px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 2px; height: 100%;
+      background: linear-gradient(180deg, #bf00ff, transparent);
+      opacity: 0.5;
+    }
+    .stat-card:hover {
+      border-color: #bf00ff44;
+      box-shadow: 0 0 12px #bf00ff11;
+    }
+
+    .stat-label {
+      font-size: 8px;
+      font-weight: 700;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .neon-green  { color: #bf00ff; text-shadow: 0 0 8px #bf00ff88; }
+    .neon-red    { color: #ff4466; text-shadow: 0 0 8px #ff446688; }
+    .neon-orange { color: #ffaa00; text-shadow: 0 0 8px #ffaa0066; }
+    .neon-blue   { color: #cc44ff; text-shadow: 0 0 8px #cc44ff66; }
+    .dim         { color: #555; }
+
+    /* ── SUBJECT SECTION ── */
+    .subject-section {
+      position: relative; z-index: 1;
+      padding: 4px 14px 10px;
+    }
+
+    .detected-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #bf00ff33;
+      background: #bf00ff0a;
+      font-size: 10px;
+      font-weight: 700;
+      color: #bf00ff;
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+    }
+    .detected-pill span {
+      font-size: 8px;
+      font-weight: 800;
+      color: #bf00ff66;
+    }
+
+    #subjectSelect {
+      width: 100%;
+      background: #05000f;
+      color: #ccc;
+      border: 1px solid #bf00ff22;
+      border-radius: 8px;
+      padding: 8px 30px 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23bf00ff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-color: #05000f;
+    }
+    #subjectSelect:focus {
+      border-color: #bf00ff66;
+      box-shadow: 0 0 10px #bf00ff22;
+    }
+    #subjectSelect option { background: #05000f; color: #ccc; }
+
+    /* ── BUTTONS ── */
+    .btn-section {
+      position: relative; z-index: 1;
+      padding: 0 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-neon {
+      background: transparent;
+      color: #bf00ff;
+      border: 1px solid #bf00ff;
+      box-shadow: 0 0 12px #bf00ff33, inset 0 0 12px #bf00ff0a;
+    }
+    .btn-neon:hover {
+      background: #bf00ff11;
+      box-shadow: 0 0 20px #bf00ff55, inset 0 0 20px #bf00ff11;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #444;
+      border: 1px solid #1a1a1a;
+    }
+    .btn-ghost:hover { color: #666; border-color: #333; }
+
+    /* ── FOOTER ── */
+    .footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 0 14px 14px;
+      font-size: 9px;
+      font-weight: 700;
+      color: #333;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Neon divider ── */
+    .neon-divider {
+      position: relative; z-index: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #bf00ff33, transparent);
+      margin: 0 14px 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="logo-row">
+
+      <div class="logo-wrap">
+        <svg viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="23" cy="23" r="20" stroke="#bf00ff" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+          <circle cx="23" cy="3"  r="1.5" fill="#bf00ff"/>
+          <circle cx="43" cy="23" r="1.5" fill="#bf00ff"/>
+          <circle cx="23" cy="43" r="1.5" fill="#bf00ff"/>
+          <circle cx="3"  cy="23" r="1.5" fill="#bf00ff"/>
+          <line x1="23" y1="5"  x2="23" y2="12" stroke="#bf00ff" stroke-width="1" opacity="0.6"/>
+          <line x1="41" y1="23" x2="34" y2="23" stroke="#bf00ff" stroke-width="1" opacity="0.6"/>
+          <line x1="23" y1="41" x2="23" y2="34" stroke="#bf00ff" stroke-width="1" opacity="0.6"/>
+          <line x1="5"  y1="23" x2="12" y2="23" stroke="#bf00ff" stroke-width="1" opacity="0.6"/>
+          <polygon points="23,10 32,15.5 32,26.5 23,32 14,26.5 14,15.5"
+                   stroke="#bf00ff" stroke-width="1.2" fill="#bf00ff08"/>
+          <path d="M14 23 Q23 15 32 23 Q23 31 14 23Z"
+                fill="#bf00ff15" stroke="#bf00ff" stroke-width="1.3"/>
+          <circle cx="23" cy="23" r="4" fill="#bf00ff22" stroke="#bf00ff" stroke-width="1.2"/>
+          <circle cx="23" cy="23" r="1.8" fill="#bf00ff"/>
+          <circle cx="24.5" cy="21.5" r="0.8" fill="white" opacity="0.8"/>
+        </svg>
+      </div>
+
+      <div class="title-block">
+        <div class="app-name">EduGuard AI</div>
+        <div class="app-tagline">Attention · Learning · Guard</div>
+      </div>
+
+      <div class="server-badge" id="server-badge">
+        <div class="dot" id="server-dot"></div>
+        <span id="server-label">...</span>
+      </div>
+    </div>
+
+    <div class="built-by">
+      <div class="built-by-line"></div>
+      <div class="built-by-text">Built by</div>
+      <div class="built-by-name">Vyshu</div>
+      <div class="built-by-text">· 2nd Year CSE(DS) · AP</div>
+      <div class="built-by-line"></div>
+    </div>
+  </div>
+
+  <!-- ── STATUS ── -->
+  <div class="status-section">
+    <div class="section-title">⬡ System Status</div>
+    <div class="status-grid">
+      <div class="stat-card">
+        <div class="stat-label">Alarm</div>
+        <div class="stat-value dim" id="alarm-status">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Quiz Active</div>
+        <div class="stat-value dim" id="quiz-status">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Streak</div>
+        <div class="stat-value neon-orange" id="streak-status">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Trigger</div>
+        <div class="stat-value dim" id="trigger-status">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="neon-divider"></div>
+
+  <!-- ── SUBJECT ── -->
+  <div class="subject-section">
+    <div class="section-title">⬡ Question Subject</div>
+    <div class="detected-pill" id="detected-pill">
+      🔍 <span>AUTO</span> Detecting subject...
+    </div>
+    <select id="subjectSelect">
+      <option value="mixed">🔀 Auto Detect</option>
+      <option value="Chemistry">🧪 Chemistry</option>
+      <option value="Physics">⚡ Physics</option>
+      <option value="Maths">📐 Maths</option>
+      <option value="Biology">🧬 Biology</option>
+      <option value="History/GK">🌍 History / GK</option>
+      <option value="Constitution">⚖️ Constitution</option>
+      <option value="CS/Programming">💻 CS / Programming</option>
+      <option value="Current Affairs">📰 Current Affairs</option>
+    </select>
+  </div>
+
+  <!-- ── BUTTONS ── -->
+  <div class="btn-section">
+    <button class="btn btn-neon" id="test-btn">
+      ▶ Simulate Ad Break
+    </button>
+    <button class="btn btn-ghost" id="refresh-btn">
+      ↻ Refresh
+    </button>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    Open YouTube · Ads trigger quiz automatically
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
